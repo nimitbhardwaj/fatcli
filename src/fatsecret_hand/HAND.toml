@@ -115,25 +115,6 @@ value = "20"
 label = "Surplus 20% (aggressive bulk)"
 
 [[settings]]
-key = "report_channel"
-label = "Report Channel"
-description = "Where to send daily reports"
-setting_type = "select"
-default = "telegram"
-
-[[settings.options]]
-value = "telegram"
-label = "Telegram"
-
-[[settings.options]]
-value = "discord"
-label = "Discord"
-
-[[settings.options]]
-value = "memory_only"
-label = "Memory only (silent)"
-
-[[settings]]
 key = "alert_threshold_protein"
 label = "Protein Alert Threshold"
 description = "Alert if protein falls below this percentage of goal"
