@@ -9,3 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# Fatsecret config (session tokens)
+session_token
+.oauth_temp
+
