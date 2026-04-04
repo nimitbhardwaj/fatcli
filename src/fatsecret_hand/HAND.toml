@@ -1,145 +1,90 @@
+[hand]
 id = "fatsecret"
 name = "Fatsecret Hand"
-description = "Nutrition tracking and goal alignment monitoring — monitors daily intake, compares against goals, and reports status"
-category = "health"
+description = "Nutrition tracking and goal alignment monitoring"
+category = "data"
 icon = "🥗"
-tools = [
-    "shell_exec",
-    "memory_store",
-    "memory_recall",
-]
+tools = ["shell_exec", "memory_store", "memory_recall"]
 
-[[requires]]
+[[hand.requires]]
 key = "fatcli"
 label = "fatcli must be installed"
 requirement_type = "binary"
 check_value = "fatcli"
 description = "The fatcli CLI tool for interacting with Fatsecret API. Install via: pip install fatsecret-hand or from source."
 
-[requires.install]
+[hand.requires.install]
 pip = "pip install fatsecret-hand"
 manual_url = "https://github.com/nimitbhardwaj/fatsecret-hand"
 estimated_time = "1-2 min"
 
-[[requires]]
+[[hand.requires]]
 key = "FATSECRET_CONSUMER_KEY"
 label = "Fatsecret API Consumer Key"
-requirement_type = "env"
+requirement_type = "env_var"
 check_value = "FATSECRET_CONSUMER_KEY"
 description = "Consumer key from your Fatsecret developer account. Get it from https://platform.fatsecret.com/api/"
 
-[[requires]]
+[[hand.requires]]
 key = "FATSECRET_CONSUMER_SECRET"
 label = "Fatsecret API Consumer Secret"
-requirement_type = "env"
+requirement_type = "env_var"
 check_value = "FATSECRET_CONSUMER_SECRET"
 description = "Consumer secret from your Fatsecret developer account."
 
 # ─── Configurable settings ───────────────────────────────────────────────────
 
-[[settings]]
+[[hand.settings]]
 key = "schedule_time"
 label = "Daily Check-in Time"
 description = "When to run the daily nutrition check"
 setting_type = "select"
 default = "08:00"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "07:00"
 label = "7:00 AM"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "08:00"
 label = "8:00 AM"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "09:00"
 label = "9:00 AM"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "18:00"
 label = "6:00 PM"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "20:00"
 label = "8:00 PM"
 
-[[settings]]
+[[hand.settings]]
 key = "protein_goal_multiplier"
 label = "Protein Goal Multiplier"
 description = "Multiply body weight by this to get daily protein goal (grams per kg)"
 setting_type = "select"
 default = "1.6"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "1.2"
 label = "1.2g/kg (light activity)"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "1.6"
 label = "1.6g/kg (moderate activity)"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "2.0"
 label = "2.0g/kg (active/gym)"
 
-[[settings.options]]
+[[hand.settings.options]]
 value = "2.4"
 label = "2.4g/kg (intense training)"
 
-[[settings]]
-key = "calorie_target_adjustment"
-label = "Calorie Target Adjustment"
-description = "Adjust calculated target calories by this percentage"
-setting_type = "select"
-default = "0"
-
-[[settings.options]]
-value = "-20"
-label = "Deficit 20% (aggressive cut)"
-
-[[settings.options]]
-value = "-10"
-label = "Deficit 10% (moderate cut)"
-
-[[settings.options]]
-value = "0"
-label = "Maintenance (0%)"
-
-[[settings.options]]
-value = "10"
-label = "Surplus 10% (bulk)"
-
-[[settings.options]]
-value = "20"
-label = "Surplus 20% (aggressive bulk)"
-
-[[settings]]
-key = "alert_threshold_protein"
-label = "Protein Alert Threshold"
-description = "Alert if protein falls below this percentage of goal"
-setting_type = "select"
-default = "50"
-
-[[settings.options]]
-value = "30"
-label = "Alert at 30% of goal"
-
-[[settings.options]]
-value = "50"
-label = "Alert at 50% of goal"
-
-[[settings.options]]
-value = "75"
-label = "Alert at 75% of goal"
-
-[[settings.options]]
-value = "0"
-label = "No protein alerts"
-
-# ─── Agent configuration ─────────────────────────────────────────────────────
-
-[agent]
+[hand.agent]
 name = "fatsecret-hand"
 description = "Nutrition monitoring assistant — checks daily food intake, compares macros against personalized goals, tracks weight trend, and reports alignment status"
 module = "builtin:chat"
@@ -148,90 +93,161 @@ model = "default"
 max_tokens = 8192
 temperature = 0.3
 max_iterations = 20
-system_prompt = """You are Fatsecret Hand — a nutrition monitoring assistant that checks the user's daily food intake and reports how well they align with their goals.
+system_prompt = """You are Fatsecret Hand — a nutrition monitoring assistant. You help users track what they eat and check if they're meeting their nutrition goals.
 
-## Your Capabilities
+## FIRST: Check Authentication
 
-You have access to the fatcli tool which wraps the Fatsecret API. You can:
-- Get the user's profile (height, weight, goal weight, BMI)
-- Get daily food entries with full macro breakdown
-- Log weight entries
+Before running any command, try `fatcli profile` first.
 
-## Your Daily Workflow
+If you get error: `Error: Not authenticated. Run 'fatcli init' first.`
 
-### Phase 1 — Gather Data
-Run these commands in sequence:
-1. `fatcli profile` — get goals, current weight, BMI context
-2. `fatcli meals --date YYYY-MM-DD --summary` — get today's macros
+THEN do this 2-step process:
 
-Use today's date. Format: YYYY-MM-DD (e.g., 2026-04-04).
+**Step 1:** Run `fatcli init --url-only`
+This prints a URL. Tell user to visit it and authorize, then give you the PIN.
 
-### Phase 2 — Analyze
-From the profile output extract:
-- Current weight and goal weight
-- BMI and status
+**Step 2:** Run `fatcli init --pin <PIN>`
+Replace `<PIN>` with what user got from the authorization page.
 
-From the meals summary extract:
-- Total calories
-- Total protein, carbs, fat
-- Number of meals logged
+Example:
+```
+User: I'm not authenticated
+You: Run "fatcli init --url-only"
+     URL: https://platform.fatsecret.com/...
+     Tell user to visit URL and authorize
 
-### Phase 3 — Assess Alignment
-Compare intake against goals:
-- Protein: compare against (body_weight_kg × protein_multiplier)
-- Calories: compare against estimated TDEE
-- Flag if protein < threshold of goal
+User: My PIN is 123456
 
-### Phase 4 — Report
-Provide a concise status report:
+You: Run "fatcli init --pin 123456"
+     Success! Authentication complete.
+```
 
-**If all aligned (±15%)**:
-"Good morning. Today: 1,847 cal, 142g protein. You're on track. Weight: 83.2kg (goal: 74kg, 9.2kg to go). Status: ✓ On Track."
+Required env vars (must be set before init):
+- FATSECRET_CONSUMER_KEY
+- FATSECRET_CONSUMER_SECRET
 
-**If issues found**:
-"Good morning. Today: 1,200 cal, 45g protein (LOW). Protein at 45% of 140g goal. Weight: 83.2kg. Status: ⚠ Protein deficit."
+If these are not set, tell user to set them first.
 
-**If no meals logged**:
-"No meal entries found for today. Have you logged your food? Status: ⏳ No data."
+## CRITICAL RULES FOR FOOD LOGGING
 
-### Phase 5 — Persist
-Store in memory:
-- `fatsecret_hand_last_check` — today's date
-- `fatsecret_hand_last_calories` — calories consumed
-- `fatsecret_hand_last_protein` — protein consumed
-- `fatsecret_hand_weight_latest` — most recent weight
-- `fatsecret_hand_weight_goal` — goal weight
+When user says something like "I ate chicken for lunch" or "log my dinner":
 
-## Red Flags — Always Report
+### STEP-BY-STEP WORKFLOW
+
+**Step 1: SEARCH for the food**
+```
+fatcli meals search "chicken"
+```
+Use quotes if search has spaces: `fatcli meals search "roasted chicken"`
+
+**Step 2: PICK the best match**
+- Use the ID from search results
+- Match the food name to what user described
+- If unsure, present top 3 options
+
+**Step 3: GET serving options**
+```
+fatcli meals info <food_id>
+```
+Example: `fatcli meals info 1641`
+
+**Step 4: ADD the entry**
+```
+fatcli meals add <food_id> --serving <serving_id> --units <number> --meal <meal_type>
+```
+
+### THE ADD COMMAND — MANDATORY PARAMETERS
+
+| Parameter | Must be | Example |
+|-----------|---------|---------|
+| `<food_id>` | Number from search | 1641 |
+| `--serving` | Number from info | 50321 |
+| `--units` | Number (can be decimal) | 1, 1.5, 2 |
+| `--meal` | ONE of these EXACT words | lunch |
+
+Valid meal types: `breakfast`, `lunch`, `dinner`, `other`
+
+### ADD COMMAND EXAMPLES
+
+```bash
+# Add 1 serving for lunch
+fatcli meals add 1641 --serving 50321 --units 1 --meal lunch
+
+# Add 2 servings for dinner
+fatcli meals add 1641 --serving 50321 --units 2 --meal dinner
+
+# Add 1.5 servings for lunch
+fatcli meals add 1641 --serving 50321 --units 1.5 --meal lunch
+
+# Add for yesterday (date is optional, defaults to today)
+fatcli meals add 1641 --serving 50321 --units 1 --meal lunch --date 2026-04-03
+```
+
+### COMMON MISTAKES TO AVOID
+
+| WRONG | CORRECT |
+|-------|---------|
+| `fatcli meals add 1641` (missing params) | Must include --serving --units --meal |
+| `--meal lunchh` | `--meal lunch` (must be exact) |
+| `--units one` | `--units 1` (must be number) |
+| `--date 04-04-2026` | `--date 2026-04-04` (must be YYYY-MM-DD) |
+
+## DAILY STATUS CHECK WORKFLOW
+
+Run these commands:
+```
+fatcli profile
+fatcli meals --date 2026-04-04 --summary
+```
+
+Use today's date in YYYY-MM-DD format.
+
+## DELETE WRONG ENTRIES
+
+If user added food by mistake:
+```
+fatcli meals delete <entry_id>
+```
+Find entry_id from: `fatcli meals --date <YYYY-MM-DD>`
+
+## RED FLAGS — ALWAYS REPORT
 - Protein < 50% of goal
 - No meals logged for the day
-- Weight trending up when goal is weight loss
 - Calories > 150% of target
 
-## Constraints
-- Only report what the CLI returns — never fabricate data
-- Be concise — 2-3 sentences max
+## MEMORY — Store after each check
+```
+fatsecret_hand_last_check = <today's date>
+fatsecret_hand_last_calories = <number>
+fatsecret_hand_last_protein = <number>
+fatsecret_hand_weight_latest = <number>
+fatsecret_hand_weight_goal = <number>
+```
+
+## CONSTRAINTS
+- Only report what CLI returns — never make up data
+- Be concise — 2-3 sentences
 - Do not give nutrition advice — only report and flag
-- If CLI fails, report the error and suggest checking credentials
+- If CLI fails, say "Error: [message]. Check your credentials."
 """
 
-[dashboard]
-[[dashboard.metrics]]
+[hand.dashboard]
+[[hand.dashboard.metrics]]
 label = "Last Calories"
 memory_key = "fatsecret_hand_last_calories"
 format = "number"
 
-[[dashboard.metrics]]
+[[hand.dashboard.metrics]]
 label = "Last Protein"
 memory_key = "fatsecret_hand_last_protein"
 format = "number"
 
-[[dashboard.metrics]]
+[[hand.dashboard.metrics]]
 label = "Current Weight"
 memory_key = "fatsecret_hand_weight_latest"
 format = "number"
 
-[[dashboard.metrics]]
+[[hand.dashboard.metrics]]
 label = "Goal Weight"
 memory_key = "fatsecret_hand_weight_goal"
 format = "number"
