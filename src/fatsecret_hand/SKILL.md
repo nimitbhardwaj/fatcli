@@ -128,14 +128,14 @@ fatcli profile --weight 83.5 --goal 74
 
 ---
 
-## COMMAND 3: fatcli meals --date <YYYY-MM-DD> --summary
+## COMMAND 3: fatcli meals get --date &lt;YYYY-MM-DD&gt; --summary
 
 ### What it does
 Shows all meals logged for a specific date with macro totals.
 
 ### Command
 ```bash
-fatcli meals --date <YYYY-MM-DD> --summary
+fatcli meals get --date <YYYY-MM-DD> --summary
 ```
 
 ### Parameters
@@ -147,10 +147,10 @@ fatcli meals --date <YYYY-MM-DD> --summary
 ### Examples
 ```bash
 # Today's summary
-fatcli meals --date 2026-04-04 --summary
+fatcli meals get --date 2026-04-04 --summary
 
 # Yesterday's summary
-fatcli meals --date 2026-04-03 --summary
+fatcli meals get --date 2026-04-03 --summary
 ```
 
 ### Output
@@ -366,12 +366,12 @@ fatcli meals delete <entry_id>
 | `<entry_id>` | Yes | Entry ID from meals list |
 
 ### How to find entry_id
-Run: `fatcli meals --date <YYYY-MM-DD>` (without --summary)
+Run: `fatcli meals get --date <YYYY-MM-DD>` (without --summary)
 
 ### Example
 ```bash
 # First, find the entry_id
-fatcli meals --date 2026-04-04
+fatcli meals get --date 2026-04-04
 # Output shows entry IDs
 
 # Delete entry ID 12345
@@ -437,13 +437,13 @@ You: Added 100g Rotisserie Chicken to lunch. (195 cal, 29.55g protein, 0g carbs,
 ### Command
 ```bash
 fatcli profile
-fatcli meals --date <YYYY-MM-DD> --summary
+fatcli meals get --date <YYYY-MM-DD> --summary
 ```
 
 ### Example
 ```bash
 fatcli profile
-fatcli meals --date 2026-04-04 --summary
+fatcli meals get --date 2026-04-04 --summary
 ```
 
 ### Report Format

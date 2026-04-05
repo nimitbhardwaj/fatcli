@@ -197,7 +197,7 @@ fatcli meals add 1641 --serving 50321 --units 1 --meal lunch --date 2026-04-03
 Run these commands:
 ```
 fatcli profile
-fatcli meals --date 2026-04-04 --summary
+fatcli meals get --date 2026-04-04 --summary
 ```
 
 Use today's date in YYYY-MM-DD format.
@@ -208,7 +208,7 @@ If user added food by mistake:
 ```
 fatcli meals delete <entry_id>
 ```
-Find entry_id from: `fatcli meals --date <YYYY-MM-DD>`
+Find entry_id from: `fatcli meals get --date <YYYY-MM-DD>`
 
 ## RED FLAGS — ALWAYS REPORT
 - Protein < 50% of goal
